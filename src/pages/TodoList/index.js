@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { usePrevious } from '../../hooks'
 import './index.css'
 import Todo from './Todo'
 import Form from './Form'
@@ -22,8 +23,17 @@ const FILTER_NAMES = Object.keys(FILTER_MAP);
 
 
 function TodoList() {
+  const listHeadingRef = useRef(null);
   const [todos, setTodos] = useState([...DATA]);
   const [filter, setFilter] = useState('All');
+
+  const prevTodosLength = usePrevious(todos.length);
+
+  useEffect( () => {
+    if (prevTodosLength - todos.length  === 1) {
+      listHeadingRef.current.focus();
+    }
+  }, [todos.length, prevTodosLength])
 
   const filterList = FILTER_NAMES.map(name => (
     <FilterButton
@@ -85,7 +95,9 @@ function TodoList() {
       <div className='filters btn-group stack-exception'>
         {filterList}
       </div>
-      <h2 id="list-heading">{headingText}</h2>
+      <h2 id="list-heading" tabIndex='-1' ref={listHeadingRef}>
+        {headingText}
+      </h2>
       {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
       <ul
         role="list"
